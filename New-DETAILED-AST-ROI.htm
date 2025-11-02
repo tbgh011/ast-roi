@@ -16,6 +16,11 @@
         }
         
         @media print {
+            /* Hide the print button for the final printout */
+            #print-button {
+                display: none;
+            }
+
             /* 1. Ensure main sections stack vertically for printing, overriding the grid */
             main {
                 display: block !important; 
@@ -38,8 +43,8 @@
                 margin-bottom: 0 !important;
             }
 
-            /* 🎯 Page 1 -> Page 2 Break: Force break after the Left Column (Inputs) */
-            #inputs-section {
+            /* 🎯 Page 1 -> Page 2 Break: FORCE BREAK AFTER "Customer Facts" */
+            #customer-facts-section {
                 page-break-after: always !important;
                 page-break-inside: avoid !important;
             }
@@ -49,11 +54,24 @@
                 page-break-before: always !important;
                 page-break-inside: avoid !important;
             }
+            
+            /* 🛑 NEW AGGRESSIVE FIX: Target the entire right section (Page 2) for compression */
+            #results-section {
+                padding: 0 !important;
+                margin: 0 !important;
+                page-break-inside: avoid !important; /* Ensure the whole section stays on Page 2 */
+            }
 
             /* Compress vertical space in result boxes to maximize Page 2 space */
             .result-box > div {
-                 padding: 0.5rem !important; 
-                 margin-bottom: 0.25rem !important; 
+                 padding: 0.3rem !important; /* Reduced padding */
+                 margin-bottom: 0.1rem !important; /* Reduced spacing between boxes */
+            }
+
+            /* Fix the final two high-value boxes to stick together on Page 2 */
+            .print-stick-to-page-2 {
+                page-break-before: avoid !important;
+                page-break-inside: avoid !important;
             }
 
             /* Ensure input fields look like static text instead of form elements */
@@ -63,8 +81,8 @@
                 padding: 0 !important;
                 background-color: transparent !important;
                 font-weight: 600; 
-                width: auto !important; /* Allow the width to collapse */
-                display: inline-block !important; /* Keeps it on the same line as the label */
+                width: auto !important; 
+                display: inline-block !important; 
             }
             
             /* Ensure the text next to the input is always visible for print */
@@ -73,7 +91,7 @@
                 font-weight: normal !important;
             }
             input + p {
-                margin-top: 0.25rem !important; /* Re-apply small margin for clarity */
+                margin-top: 0.25rem !important; 
             }
         }
     </style>
@@ -86,7 +104,7 @@
 
         <main class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
             <section id="inputs-section" class="bg-gray-50 p-6 rounded-xl shadow-inner space-y-8">
-                <div>
+                <div id="customer-facts-section">
                     <h2 class="text-2xl font-bold text-gray-700 mb-6">Customer Facts</h2>
                     <div class="space-y-4">
                         <div>
@@ -113,7 +131,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div id="without-contrast-section">
                     <h2 class="text-2xl font-bold text-gray-700 mb-6">Without Contrast</h2>
                     <div class="space-y-4">
                         <div>
@@ -137,7 +155,7 @@
                 </div>
             </section>
 
-            <section class="bg-indigo-50 p-6 rounded-xl shadow-inner space-y-8 flex flex-col justify-between">
+            <section id="results-section" class="bg-indigo-50 p-6 rounded-xl shadow-inner space-y-8 flex flex-col justify-between">
                 <div>
                     <div>
                         <h2 class="text-2xl font-bold text-indigo-700 mb-6">With Contrast</h2>
@@ -169,17 +187,20 @@
                                 <input id="contrastCost" type="number" value="15000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150 ease-in-out">
                             </div>
                             <p class="result text-sm text-gray-700">Contrast Annual Contract: <span id="annualContract" class="font-bold text-gray-900"></span></p>
-                            <div class="bg-indigo-600 text-white p-4 rounded-lg shadow-md">
+                            <div class="bg-indigo-600 text-white p-4 rounded-lg shadow-md print-stick-to-page-2">
                                 <h3 class="text-lg font-bold">Net Savings per App/Year</h3>
                                 <p id="netApp" class="text-2xl font-extrabold mt-1"></p>
                             </div>
-                            <div class="bg-indigo-500 text-white p-4 rounded-lg shadow-md">
+                            <div class="bg-indigo-500 text-white p-4 rounded-lg shadow-md print-stick-to-page-2">
                                 <h3 class="text-lg font-bold">Net Savings - Annual</h3>
                                 <p id="netAnnual" class="text-2xl font-extrabold mt-1"></p>
                             </div>
                         </div>
                     </div>
                 </div>
+                <button id="print-button" onclick="window.print()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md">
+                    🖨️ Print Results
+                </button>
             </section>
         </main>
 
@@ -222,15 +243,12 @@
             const relevantFindings = findings * (1 - fpRate);
             const triageCost = hourlyRate * triageTime / 60;
             const triageScan = triageCost * findings;
-            // The existing calculation for annual triage cost looks wrong based on the retriage rate label.
-            // It seems to assume retriaging (releases - 1) times. Assuming this is the desired formula:
             const triageAnnual = triageScan + triageScan * retriageRate * (releases - 1); 
             const fixAnnual = fixTime * relevantFindings / 60 * hourlyRate;
             const totalBefore = triageAnnual + fixAnnual;
 
-            const contrastFindings = relevantFindings / (4.2 / 0.9); // 4.6x LESS vulns: 4.2 / 0.9 = 4.666...
+            const contrastFindings = relevantFindings / (4.2 / 0.9);
             const fixTimeAfter = fixTime / 3;
-            // The code sets triageAfter = 0, which aligns with the assumption of no triaging needed.
             const triageAfter = 0; 
             const fixAnnualAfter = fixTimeAfter * contrastFindings / 60 * hourlyRate;
             const totalAfter = fixAnnualAfter;
