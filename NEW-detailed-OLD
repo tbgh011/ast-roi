@@ -14,6 +14,68 @@
         .container {
             max-width: 1200px;
         }
+        
+        @media print {
+            /* 1. Ensure main sections stack vertically for printing, overriding the grid */
+            main {
+                display: block !important; 
+                grid-template-columns: 1fr !important; 
+                gap: 0 !important; 
+            }
+
+            /* Global print reset for cleaner look */
+            section, footer, header {
+                box-shadow: none !important;
+                background-color: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .p-6 {
+                padding: 0 !important;
+            }
+            .my-8 {
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+            }
+
+            /* 🎯 Page 1 -> Page 2 Break: Force break after the Left Column (Inputs) */
+            #inputs-section {
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+            }
+            
+            /* 🎯 Page 2 -> Page 3 Break: Force break before the Footer (Assumptions) */
+            #assumptions-footer {
+                page-break-before: always !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Compress vertical space in result boxes to maximize Page 2 space */
+            .result-box > div {
+                 padding: 0.5rem !important; 
+                 margin-bottom: 0.25rem !important; 
+            }
+
+            /* Ensure input fields look like static text instead of form elements */
+            input[type="number"] {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                background-color: transparent !important;
+                font-weight: 600; 
+                width: auto !important; /* Allow the width to collapse */
+                display: inline-block !important; /* Keeps it on the same line as the label */
+            }
+            
+            /* Ensure the text next to the input is always visible for print */
+            label {
+                display: block !important;
+                font-weight: normal !important;
+            }
+            input + p {
+                margin-top: 0.25rem !important; /* Re-apply small margin for clarity */
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 sm:p-6">
@@ -23,8 +85,7 @@
         </header>
 
         <main class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-            <!-- Left Column: Inputs -->
-            <section class="bg-gray-50 p-6 rounded-xl shadow-inner space-y-8">
+            <section id="inputs-section" class="bg-gray-50 p-6 rounded-xl shadow-inner space-y-8">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-700 mb-6">Customer Facts</h2>
                     <div class="space-y-4">
@@ -76,7 +137,6 @@
                 </div>
             </section>
 
-            <!-- Right Column: Results -->
             <section class="bg-indigo-50 p-6 rounded-xl shadow-inner space-y-8 flex flex-col justify-between">
                 <div>
                     <div>
@@ -91,7 +151,7 @@
                     </div>
                     <div class="mt-8">
                         <h2 class="text-2xl font-bold text-indigo-700 mb-6">Costs and Savings</h2>
-                        <div class="space-y-4">
+                        <div class="space-y-4 result-box">
                             <div class="bg-white p-4 rounded-lg shadow">
                                 <h3 class="font-semibold text-gray-800">Cost Savings per App/Year</h3>
                                 <p id="savingsApp" class="text-2xl font-bold text-green-600 mt-1"></p>
@@ -123,7 +183,7 @@
             </section>
         </main>
 
-        <footer class="mt-10 pt-6 border-t border-gray-300 text-sm text-gray-600">
+        <footer id="assumptions-footer" class="mt-10 pt-6 border-t border-gray-300 text-sm text-gray-600">
             <p class="font-semibold">Assumptions:</p>
             <ul class="list-disc list-inside text-xs text-gray-500 mt-2 space-y-1">
                 <li>40% industry false positive rate</li>
@@ -162,13 +222,16 @@
             const relevantFindings = findings * (1 - fpRate);
             const triageCost = hourlyRate * triageTime / 60;
             const triageScan = triageCost * findings;
-            const triageAnnual = triageScan + triageScan * retriageRate * (releases - 1);
+            // The existing calculation for annual triage cost looks wrong based on the retriage rate label.
+            // It seems to assume retriaging (releases - 1) times. Assuming this is the desired formula:
+            const triageAnnual = triageScan + triageScan * retriageRate * (releases - 1); 
             const fixAnnual = fixTime * relevantFindings / 60 * hourlyRate;
             const totalBefore = triageAnnual + fixAnnual;
 
-            const contrastFindings = relevantFindings / (4.2 / 0.9);
+            const contrastFindings = relevantFindings / (4.2 / 0.9); // 4.6x LESS vulns: 4.2 / 0.9 = 4.666...
             const fixTimeAfter = fixTime / 3;
-            const triageAfter = 0;
+            // The code sets triageAfter = 0, which aligns with the assumption of no triaging needed.
+            const triageAfter = 0; 
             const fixAnnualAfter = fixTimeAfter * contrastFindings / 60 * hourlyRate;
             const totalAfter = fixAnnualAfter;
 
