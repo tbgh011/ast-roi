@@ -26,7 +26,7 @@
             #inputs-section {
                 box-shadow: none !important;
                 background-color: transparent !important;
-                /* 🎯 Page Break after Inputs (Page 1 -> Page 2) */
+                /* 🎯 Page Break after Inputs (Page 1 -> Page 2) - KEEP this if you want two pages */
                 page-break-after: always;
                 page-break-inside: avoid;
             }
@@ -46,9 +46,10 @@
                 page-break-inside: avoid !important;
             }
             
-            /* 🎯 Page 3 Start: Target the third element in main (the assumptions div) */
+            /* 🎯 CRITICAL FIX: Hide the assumptions section completely */
             #assumptions-notes {
-                page-break-before: always;
+                display: none !important; /* This hides the element when printing */
+                page-break-before: auto !important; /* Remove the old page break rule */
                 box-shadow: none !important; 
                 background-color: transparent !important;
                 padding: 0 !important;
