@@ -16,62 +16,68 @@
         }
         
         @media print {
+            /* Aggressive compression for single-page print */
+            body, .container {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                box-shadow: none !important;
+            }
+            header { margin-bottom: 0.5rem !important; }
+            h1 { font-size: 1.8rem !important; margin-bottom: 0.3rem !important; }
+            section h2 { font-size: 1.2rem !important; margin-bottom: 0.5rem !important; }
+
             /* Hide the print button for the final printout */
             #print-button {
                 display: none;
             }
 
-            /* 1. Ensure main sections stack vertically for printing, overriding the grid */
+            /* 🎯 CRITICAL FIX 1: Re-enable side-by-side layout (two columns) for printing */
             main {
-                display: block !important; 
-                grid-template-columns: 1fr !important; 
-                gap: 0 !important; 
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important; /* Forces two equal columns */
+                gap: 1rem !important; /* Small gap between columns */
+                padding: 0.5rem !important; /* Minimal padding around the grid */
+                page-break-after: avoid !important; 
+                page-break-inside: avoid !important;
+                width: 100% !important;
             }
 
-            /* Global print reset for cleaner look */
-            section, footer, header {
+            /* 🎯 CRITICAL FIX 2: Hide the assumptions footer (which was previously forced to Page 3) */
+            #assumptions-footer {
+                display: none !important;
+            }
+
+            /* Remove vertical page breaks and shadows from main sections */
+            #customer-facts-section, #results-section {
+                page-break-after: auto !important; /* Prevent break after inputs */
+                page-break-before: auto !important; /* Prevent break before results */
+                page-break-inside: avoid !important;
                 box-shadow: none !important;
                 background-color: transparent !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-            .p-6 {
-                padding: 0 !important;
-            }
-            .my-8 {
-                margin-top: 0 !important;
-                margin-bottom: 0 !important;
-            }
-
-            /* 🎯 Page 1 -> Page 2 Break: FORCE BREAK AFTER "Customer Facts" */
-            #customer-facts-section {
-                page-break-after: always !important;
-                page-break-inside: avoid !important;
+                padding: 0.5rem !important;
             }
             
-            /* 🎯 Page 2 -> Page 3 Break: Force break before the Footer (Assumptions) */
-            #assumptions-footer {
-                page-break-before: always !important;
-                page-break-inside: avoid !important;
-            }
-            
-            /* 🛑 NEW AGGRESSIVE FIX: Target the entire right section (Page 2) for compression */
-            #results-section {
-                padding: 0 !important;
-                margin: 0 !important;
-                page-break-inside: avoid !important; /* Ensure the whole section stays on Page 2 */
+            /* Compress vertical space in input/result sections to fit all content */
+            #inputs-section > div, #results-section > div {
+                margin-top: 0.5rem !important;
+                margin-bottom: 0.5rem !important;
             }
 
-            /* Compress vertical space in result boxes to maximize Page 2 space */
+            /* Compress vertical space in result boxes to maximize content space */
             .result-box > div {
-                 padding: 0.3rem !important; /* Reduced padding */
-                 margin-bottom: 0.1rem !important; /* Reduced spacing between boxes */
+                padding: 0.25rem !important; /* Very small padding */
+                margin-bottom: 0.1rem !important; /* Minimal spacing */
+                font-size: 0.9em !important; /* Smaller text */
             }
-
-            /* Fix the final two high-value boxes to stick together on Page 2 */
+            .result-box h3 { font-size: 0.9em !important; }
+            .result-box p { font-size: 1.1em !important; }
+            
+            /* Ensure the final KPI boxes stick together */
             .print-stick-to-page-2 {
                 page-break-before: avoid !important;
                 page-break-inside: avoid !important;
+                margin-top: 0.2rem !important;
             }
 
             /* Ensure input fields look like static text instead of form elements */
@@ -80,18 +86,15 @@
                 box-shadow: none !important;
                 padding: 0 !important;
                 background-color: transparent !important;
-                font-weight: 600; 
+                font-weight: 600;
                 width: auto !important; 
                 display: inline-block !important; 
+                font-size: 0.9em !important;
             }
-            
-            /* Ensure the text next to the input is always visible for print */
             label {
                 display: block !important;
                 font-weight: normal !important;
-            }
-            input + p {
-                margin-top: 0.25rem !important; 
+                font-size: 0.8em !important;
             }
         }
     </style>
